@@ -29,8 +29,6 @@ This structure reflects a production-style multi-service application.
 . Offline sync  
 . AI recommendations  
 
----
-
 ## Vision
 
 To build an industry-grade collaboration platform while learning scalable architecture, cloud practices, and DevOps workflows.
