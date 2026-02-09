@@ -1,34 +1,39 @@
 # SmartCollab
-SmartCollab is a scalable collaboration platform that enables teams to manage projects, tasks, and real-time updates using a microservice architecture.
+SmartCollab is a production-ready collaboration platform that enables teams to manage projects, track tasks, and collaborate efficiently through a scalable full-stack architecture.
 
 ## Tech Stack
 
 **Frontend:** React (Vite)  
 **Backend:** Node.js + Express  
 **Database:** MongoDB  
-**Microservice:** Flask  
 **DevOps:** Docker + GitHub Actions  
 **Deployment:** Render  
+
+## Key Features
+
+ Secure JWT Authentication  
+ Scalable Node.js backend architecture  
+ RESTful API design  
+ MongoDB cloud database integration  
+ MVC project structure  
+ Environment-based configuration  
 
 ## Architecture
 
 smartcollab/
  ├── frontend
  ├── backend
- ├── flask-service
 
-This structure reflects a production-style multi-service application.
 
-## Future Features
-
-. Authentication  
-. Project collaboration  
-. Task tracking  
-. Real-time updates  
-. Analytics microservice  
-. Offline sync  
-. AI recommendations  
+## Upcoming Features
+⬜ Role-based authorization  
+⬜ Real-time collaboration (Socket.io)  
+⬜ File uploads  
+⬜ Advanced search & filters  
+⬜ Dockerized deployment  
+⬜ CI/CD pipeline  
 
 ## Vision
 
-To build an industry-grade collaboration platform while learning scalable architecture, cloud practices, and DevOps workflows.
+To design and develop a production-grade collaboration platform that reflects industry best practices in backend architecture, security, and scalability.
+
