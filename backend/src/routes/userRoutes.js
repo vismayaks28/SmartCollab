@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 
-// Create user
+// creating user
 router.post("/", async(req,res)=>{
     try{
         const user = await User.create(req.body);
@@ -12,7 +12,8 @@ router.post("/", async(req,res)=>{
     }
 });
 
-// Get users
+
+// getting user
 router.get("/", async(req,res)=>{
     const users = await User.find();
     res.json(users);
