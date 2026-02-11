@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const logActivity = require("../utils/logActivity");
 
 // generating jsw token -----
 const generateToken = (id) => {
@@ -36,6 +37,8 @@ exports.registerUser = async (req, res) => {
             email: user.email,
             token: generateToken(user._id)
         });
+        await logActivity(user._id, "USER_REGISTERED");
+
 
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -62,8 +65,13 @@ exports.loginUser = async (req, res) => {
         } else {
             res.status(401).json({ message: "Invalid email or password" });
         }
+        await logActivity(user._id, "USER_LOGGED_IN");
 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+
+
