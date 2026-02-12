@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const cors = require("cors");
 const activityRoutes = require("./routes/activityRoutes");
 const projectRoutes = require("./routes/projectRoutes");
+const taskRoutes = require("./routes/taskRoutes");
 
 dotenv.config();
 
@@ -25,6 +26,10 @@ app.use("/api/activity", activityRoutes);
 
 
 app.use("/api/projects", projectRoutes);
+
+
+app.use("/api/tasks", taskRoutes);
+
 
 app.listen(5000, () => {
     console.log("Server running on port 5000");
