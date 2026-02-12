@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db"); 
 const cors = require("cors");
 const activityRoutes = require("./routes/activityRoutes");
+const projectRoutes = require("./routes/projectRoutes");
 
 dotenv.config();
 
@@ -21,6 +22,9 @@ app.use("/api/auth", require("./routes/authRoutes"));
 
 
 app.use("/api/activity", activityRoutes);
+
+
+app.use("/api/projects", projectRoutes);
 
 app.listen(5000, () => {
     console.log("Server running on port 5000");
