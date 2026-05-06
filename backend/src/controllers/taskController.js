@@ -9,9 +9,11 @@ exports.createTask = async(req,res)=>{
     try{
 
         const project = await Project.findById(req.body.project);
-
-        // only one member can create task
-
+        if (!project) {
+            return res.status(404).json({
+            message: "Project not found"
+            });
+        }
         if(!project.members.includes(req.user.id)){
             return res.status(403).json({
                 message:"Not a project member"
@@ -62,6 +64,13 @@ exports.updateTask = async(req,res)=>{
             req.body,
             {new:true}
         );
+        const project = await Project.findById(task.project);
+
+        if (!project.members.includes(req.user.id)) {
+            return res.status(403).json({
+                message: "Not authorized"
+            });
+        }
 
         await logActivity(
             req.user.id,
@@ -84,6 +93,20 @@ exports.deleteTask = async(req,res)=>{
     try{
 
         const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({
+             message: "Task not found"
+             });
+        }
+
+        const project = await Project.findById(task.project);
+
+        if (!project.members.includes(req.user.id)) {
+            return res.status(403).json({
+                message: "Not authorized"
+            });
+        }
 
         await task.deleteOne();
 

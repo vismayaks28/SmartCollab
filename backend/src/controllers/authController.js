@@ -31,13 +31,17 @@ exports.registerUser = async (req, res) => {
             password: hashedPassword
         });
 
+        await logActivity(
+            user._id, "USER_REGISTERED",
+            user._id,"user");
+
         res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
             token: generateToken(user._id)
         });
-        await logActivity(user._id, "USER_REGISTERED");
+        
 
 
     } catch (error) {
@@ -55,6 +59,8 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ email });
 
+        await logActivity(user._id, "USER_LOGGED_IN", user._id, "User");
+
         if (user && await bcrypt.compare(password, user.password)) {
             res.json({
                 _id: user._id,
@@ -65,7 +71,7 @@ exports.loginUser = async (req, res) => {
         } else {
             res.status(401).json({ message: "Invalid email or password" });
         }
-        await logActivity(user._id, "USER_LOGGED_IN");
+        
 
     } catch (error) {
         res.status(500).json({ message: error.message });

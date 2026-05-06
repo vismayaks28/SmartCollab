@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Activity = require("../models/Activity");
+const protect = require("../middleware/authMiddleware");
 
-
-router.get("/", async (req, res) => {
+router.get("/",protect,  async (req, res) => {
     try {
         const activities = await Activity.find()
             .populate("user", "name email")
