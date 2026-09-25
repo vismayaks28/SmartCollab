@@ -3,46 +3,68 @@ const logActivity = require("../utils/logActivity");
 const Task = require("../models/Task");
 const User = require("../models/User");
 
-// create project
-exports.createProject = async(req,res)=>{
-    try{
+// Create project
+exports.createProject = async (req, res) => {
+    try {
+        const { title, description } = req.body;
+
+        if (!title || !title.trim()) {
+            return res.status(400).json({
+                message: "Project title is required"
+            });
+        }
+
         const project = await Project.create({
-            ...req.body,
-            owner:req.user.id,
-            members:[req.user.id]
+            title: title.trim(),
+            description,
+            owner: req.user.id,
+            members: [req.user.id]
         });
 
         await logActivity(
             req.user.id,
             "CREATE_PROJECT",
-            `Created project ${project.title}`
+            project._id,
+            "Project"
         );
 
         res.status(201).json(project);
-    }catch(err){
-        res.status(500).json({error:err.message});
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
     }
 };
 
-//get created project
-exports.getProjects = async(req,res)=>{
-    try{
+
+// Get projects
+exports.getProjects = async (req, res) => {
+    try {
         const projects = await Project.find({
-            members:req.user.id
-        }).populate("owner","name email");
+            members: req.user.id
+        }).populate("owner", "name email");
 
         res.json(projects);
-    }catch(err){
-        res.status(500).json({error:err.message});
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
     }
 };
 
-// inviting user to project for collaboration
 
-
+// Invite user to project
 exports.inviteUserToProject = async (req, res) => {
     try {
         const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                message: "User email is required"
+            });
+        }
 
         const project = await Project.findById(req.params.id);
 
@@ -52,30 +74,33 @@ exports.inviteUserToProject = async (req, res) => {
             });
         }
 
-        // Only owner can invite the users
+        // Only project owner can invite users
         if (project.owner.toString() !== req.user.id) {
             return res.status(403).json({
                 message: "Only project owner can invite users"
             });
         }
 
-        // finding user(using email)
         const userToInvite = await User.findOne({ email });
+
         if (!userToInvite) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
 
-    
-        if (project.members.includes(userToInvite._id)) {
+        const alreadyMember = project.members.some(
+            member => member.toString() === userToInvite._id.toString()
+        );
+
+        if (alreadyMember) {
             return res.status(400).json({
                 message: "User already a project member"
             });
         }
 
-        // Adding member
         project.members.push(userToInvite._id);
+
         await project.save();
 
         await logActivity(
@@ -90,15 +115,15 @@ exports.inviteUserToProject = async (req, res) => {
             project
         });
 
-    } catch (error) {
+    } catch (err) {
         res.status(500).json({
-            error: error.message
+            error: err.message
         });
     }
 };
 
 
-// Deleting project possible only by the owner
+// Delete project
 exports.deleteProject = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
@@ -108,26 +133,37 @@ exports.deleteProject = async (req, res) => {
                 message: "Project not found"
             });
         }
+
+        // Only project owner can delete
         if (project.owner.toString() !== req.user.id) {
             return res.status(403).json({
                 message: "Not authorized"
             });
         }
 
-       
-        await Task.deleteMany({ project: project._id });
+        const projectId = project._id;
+
+        // Delete all tasks belonging to the project
+        await Task.deleteMany({
+            project: projectId
+        });
+
         await project.deleteOne();
-        
+
         await logActivity(
             req.user.id,
             "DELETE_PROJECT",
-            `Deleted project ${project.title}`
+            projectId,
+            "Project"
         );
-       res.json({
+
+        res.json({
             message: "Project deleted successfully"
         });
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({
+            error: err.message
+        });
     }
 };
-
