@@ -26,3 +26,22 @@ exports.createRepository = async (req, res) => {
         });
     }
 };
+
+// get repository
+
+exports.getRepositories = async (req, res) => {
+    try {
+        const repositories = await Repository.find({
+            owner: req.user.id
+        })
+            .populate("owner", "name email")
+            .populate("project", "title");
+
+        res.json(repositories);
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
