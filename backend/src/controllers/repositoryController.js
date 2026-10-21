@@ -128,3 +128,33 @@ exports.updateRepository = async (req, res) => {
         });
     }
 };
+
+// Delete repository
+exports.deleteRepository = async (req, res) => {
+    try {
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        if (repository.owner.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only the repository owner can delete it"
+            });
+        }
+
+        await repository.deleteOne();
+
+        res.json({
+            message: "Repository deleted successfully"
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
