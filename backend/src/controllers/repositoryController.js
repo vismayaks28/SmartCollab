@@ -36,6 +36,7 @@ exports.getRepositories = async (req, res) => {
         })
             .populate("owner", "name email")
             .populate("project", "title");
+            
 
         res.json(repositories);
 
@@ -45,3 +46,25 @@ exports.getRepositories = async (req, res) => {
         });
     }
 };
+
+exports.getRepository = async (req, res) => {
+    try {
+        const repository = await Repository.findById(req.params.id)
+            .populate("owner", "name email")
+            .populate("project", "title");
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        res.json(repository);
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
+
