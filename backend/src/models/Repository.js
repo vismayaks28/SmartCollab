@@ -30,7 +30,11 @@ const repositorySchema = new mongoose.Schema(
             type: String,
             enum: ["public", "private"],
             default: "private"
-        }
+        },
+        readme: {
+            type: String,
+            default: ""
+        },
     },
     {
         timestamps: true

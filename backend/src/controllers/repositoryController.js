@@ -1,4 +1,5 @@
 const Repository = require("../models/Repository");
+const RepositoryFile = require("../models/RepositoryFile");
 
 exports.createRepository = async (req, res) => {
     try {
@@ -169,6 +170,147 @@ exports.deleteRepository = async (req, res) => {
         });
 
     } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
+
+// Update repository README
+exports.updateReadme = async (req, res) => {
+    try {
+        const { readme } = req.body;
+
+        if (typeof readme !== "string") {
+            return res.status(400).json({
+                message: "README must be a string"
+            });
+        }
+
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        if (repository.owner.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only the repository owner can update the README"
+            });
+        }
+
+        repository.readme = readme;
+        await repository.save();
+
+        res.json({
+            message: "README updated successfully",
+            readme: repository.readme
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};// List files in a repository
+exports.getRepositoryFiles = async (req, res) => {
+    try {
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        const isOwner =
+            req.user &&
+            repository.owner.toString() === req.user.id;
+
+        if (repository.visibility === "private" && !isOwner) {
+            return res.status(req.user ? 403 : 401).json({
+                message: req.user
+                    ? "You do not have access to this repository"
+                    : "Authentication required"
+            });
+        }
+
+        const files = await RepositoryFile.find({
+            repository: repository._id
+        }).sort({ path: 1 });
+
+        res.json(files);
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
+
+
+// Create a file in a repository
+exports.createRepositoryFile = async (req, res) => {
+    try {
+        const { path, content } = req.body;
+
+        if (typeof path !== "string" || !path.trim()) {
+            return res.status(400).json({
+                message: "File path is required"
+            });
+        }
+
+        if (content !== undefined && typeof content !== "string") {
+            return res.status(400).json({
+                message: "File content must be a string"
+            });
+        }
+
+        const normalizedPath = path.trim().replace(/\\/g, "/");
+
+        if (
+            normalizedPath.startsWith("/") ||
+            normalizedPath.split("/").some(
+                part => !part || part === "." || part === ".."
+            )
+        ) {
+            return res.status(400).json({
+                message: "Invalid file path"
+            });
+        }
+
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        if (repository.owner.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only the repository owner can add files"
+            });
+        }
+
+        const file = await RepositoryFile.create({
+            repository: repository._id,
+            path: normalizedPath,
+            content: content || "",
+            type: "file"
+        });
+
+        res.status(201).json(file);
+
+    } catch (err) {
+        if (err.code === 11000) {
+            return res.status(409).json({
+                message: "A file with this path already exists"
+            });
+        }
+
         res.status(500).json({
             error: err.message
         });
