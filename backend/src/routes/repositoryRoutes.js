@@ -12,7 +12,9 @@ const {
     deleteRepository,
     updateReadme,
     getRepositoryFiles,
-    createRepositoryFile
+    createRepositoryFile,
+    updateRepositoryFile,
+    deleteRepositoryFile
 
 } = require("../controllers/repositoryController");
 
@@ -25,5 +27,7 @@ router.patch("/:id/readme", protect, updateReadme);
 
 router.get("/:id/files", optionalAuth, getRepositoryFiles);
 router.post("/:id/files", protect, createRepositoryFile);
+router.patch("/:id/files/:fileId", protect, updateRepositoryFile);
+router.delete("/:id/files/:fileId", protect, deleteRepositoryFile);
 
 module.exports = router;

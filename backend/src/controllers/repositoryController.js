@@ -316,3 +316,94 @@ exports.createRepositoryFile = async (req, res) => {
         });
     }
 };
+
+// Update a repository file
+exports.updateRepositoryFile = async (req, res) => {
+    try {
+        const { content } = req.body;
+
+        if (typeof content !== "string") {
+            return res.status(400).json({
+                message: "File content must be a string"
+            });
+        }
+
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        if (repository.owner.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only the repository owner can edit files"
+            });
+        }
+
+        const file = await RepositoryFile.findOne({
+            _id: req.params.fileId,
+            repository: repository._id,
+            type: "file"
+        });
+
+        if (!file) {
+            return res.status(404).json({
+                message: "File not found"
+            });
+        }
+
+        file.content = content;
+        await file.save();
+
+        res.json(file);
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
+
+// Delete a repository file
+exports.deleteRepositoryFile = async (req, res) => {
+    try {
+        const repository = await Repository.findById(req.params.id);
+
+        if (!repository) {
+            return res.status(404).json({
+                message: "Repository not found"
+            });
+        }
+
+        if (repository.owner.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only the repository owner can delete files"
+            });
+        }
+
+        const file = await RepositoryFile.findOne({
+            _id: req.params.fileId,
+            repository: repository._id,
+            type: "file"
+        });
+
+        if (!file) {
+            return res.status(404).json({
+                message: "File not found"
+            });
+        }
+
+        await file.deleteOne();
+
+        res.json({
+            message: "File deleted successfully"
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+};
