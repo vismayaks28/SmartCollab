@@ -49,9 +49,7 @@ exports.getRepositories = async (req, res) => {
 
 exports.getRepository = async (req, res) => {
     try {
-        const repository = await Repository.findById(req.params.id)
-            .populate("owner", "name email")
-            .populate("project", "title");
+        const repository = await Repository.findById(req.params.id);
 
         if (!repository) {
             return res.status(404).json({
@@ -59,15 +57,33 @@ exports.getRepository = async (req, res) => {
             });
         }
 
-        res.json(repository);
+        const isOwner =
+            req.user &&
+            repository.owner.toString() === req.user.id;
+
+        if (repository.visibility === "private" && !isOwner) {
+            if (!req.user) {
+                return res.status(401).json({
+                    message: "Authentication required to view this repository"
+                });
+            }
+
+            return res.status(403).json({
+                message: "You do not have access to this repository"
+            });
+        }
+
+        await repository.populate("owner", "name email");
+        await repository.populate("project", "title");
+
+        return res.json(repository);
 
     } catch (err) {
-        res.status(500).json({
+        return res.status(500).json({
             error: err.message
         });
     }
 };
-
 
 // Update repository settings
 exports.updateRepository = async (req, res) => {
